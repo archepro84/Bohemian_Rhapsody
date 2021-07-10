@@ -26,9 +26,8 @@ nunjucks.configure("views", {
     watch: true,
 })
 
-
 app.get('/', (req, res) => {
-    res.render("Start_html")
+    res.render("router_post_test", {result: "3"})
 });
 
 // Router 연동

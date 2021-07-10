@@ -3,7 +3,7 @@
     "username": "root",
     "password": "1234",
     "database": "Bohemian_Rhapsody",
-    "host": "127.0.0.1",
+    "host": "localhost",
     "dialect": "mysql",
     "logging": false
   },
