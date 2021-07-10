@@ -3,8 +3,7 @@ const router = express.Router();
 
 
 
-router.get('/', async (req, res) => {
-
+router.get('/post', async (req, res) => {
     res.send({result: "Hello"})
 });
 

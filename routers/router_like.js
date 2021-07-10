@@ -3,8 +3,7 @@ const router = express.Router();
 
 
 
-router.get('/', async (req, res) => {
-
+router.get('/like', async (req, res) => {
     res.send({result: "Hello"})
 });
 
