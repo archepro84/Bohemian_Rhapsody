@@ -18,4 +18,4 @@ doc/*.txt
 # ignore all .pdf files in the doc/ directory
 doc/**/*.pdf
 
-node_modules
+node_modules/
