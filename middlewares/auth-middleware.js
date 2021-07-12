@@ -1,26 +1,31 @@
 const jwt = require("jsonwebtoken");
-const Users = require("../models/users");
+const {Users} = require("../models");
 
 module.exports = async (req, res, next) => {
-  const { authorization } = req.headers;
+    const {authorization} = req.headers;
+    if (authorization == undefined) {
+        // 헤더에 토큰이 없을 경우
+        res.status(401).send();
+        return;
+    }
 
-  if (authorization == undefined) {
-  }
+    const [tokenType, tokenValue] = authorization.split(" ");
+    if (tokenType !== "Bearer") {
+        // 헤더의 토큰 형식이 다른 경우
+        res.status(401).send();
+        return;
+    }
 
-  const [tokenType, tokenValue] = authorization.split("");
-
-  if (tokenType !== "Bearer") {
-    res.status(401).send({
-      errorMessage: "로그인 후 사용하세요",
-    });
-  }
-
-  try {
-    const { userId } = jwt.verify(tokenValue, "my-secret-key");
-  } catch (error) {
-    res.status(401).send({
-      errorMessage: "로그인 후 사용하세요",
-    });
-    return;
-  }
+    try {
+        const {userId} = jwt.verify(tokenValue, "Freddie_Mercury");
+        await Users.findByPk(userId)
+            .then((user) => {
+                res.locals.user = user['dataValues']
+            })
+        next();
+    } catch (error) {
+        // 토큰의 인증이 실패한 경우
+        res.status(401).send();
+        return;
+    }
 };

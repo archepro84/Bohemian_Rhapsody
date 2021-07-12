@@ -36,11 +36,35 @@
     }
 
     function _3() {
-        console.log("_3");
+        $.ajax({
+            type: "GET",
+            url: `/api/post/posts`,
+            data: {},
+            success: function (response) {
+                console.log(response);
+            },
+            error: function (error) {
+
+            },
+        });
+
     }
 
     function _4() {
-        console.log("_4");
+        $.ajax({
+            type: "GET",
+            url: `/api/user/me`,
+            headers: {
+                authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIn0.fn3I3Ii_VEym4unCH4rzjsLYX0cByojWBY6v828KeTA"
+            },
+            data: {},
+            success: function (response) {
+                console.log(response);
+            },
+            error: function (error) {
+
+            },
+        });
     }
 
     function _5() {
@@ -61,12 +85,15 @@
         $.ajax({
             type: "POST",
             url: `/api/post`,
+            headers: {
+                authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIn0.fn3I3Ii_VEym4unCH4rzjsLYX0cByojWBY6v828KeTA"
+            },
             data: {title, artist, showDate, description, img},
             success: function (response) {
                 console.log(`/api/post ajax Success`);
             },
             error: function (error) {
-
+                console.error(error);
             },
         });
     }
@@ -76,17 +103,76 @@
         $.ajax({
             type: "GET",
             url: `/api/search`,
-            data: {keyword},
+            data: {},
             success: function (response) {
-                console.log("Success get_api_search");
+                console.log(response);
+            },
+            error: function (error) {
+                console.error(error);
+            },
+        });
+    }
+
+    function put_modify_post() {
+        const postId = 4;
+        const title = $('#title').val()
+        const artist = $('#artist').val()
+        const showDate = new Date();
+        const description = $('#description').val()
+        const img = $('#img').val()
+        $.ajax({
+            type: "PUT",
+            url: `/api/post/${postId}`,
+            headers: {
+                authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIn0.fn3I3Ii_VEym4unCH4rzjsLYX0cByojWBY6v828KeTA",
+            },
+            data: {title, artist, showDate, description, img},
+            success: function (response) {
+                console.log("Clear put_modify_post ");
+            },
+            error: function (error) {
+                console.error(error);
+            },
+        });
+    }
+
+    function post_login() {
+        localStorage.clear()
+        const nickname = $('#nickname').val()
+        const password = $('#password').val()
+
+        $.ajax({
+            type: "POST",
+            url: `/api/login`,
+
+            data: {nickname, password},
+            success: function (response) {
+                console.log("login Clear");
+                console.log(response.token);
+                localStorage.setItem("token", response.token)
+
             },
             error: function (error) {
 
             },
         });
     }
-    function file_upload() {
 
+    function post_nickname_search() {
+        const nickname = $('#nickname').val()
+
+        $.ajax({
+            type: "POST",
+            url: `/api/sign/nickname`,
+
+            data: {nickname},
+            success: function (response) {
+                console.log("post_nickname search Clear");
+            },
+            error: function (error) {
+                console.error(error);
+            },
+        });
 
     }
 
@@ -104,6 +190,9 @@
     <button onclick="post_api_post()" type="button" class="btn btn-info">post_api_post</button>
     <button onclick="get_api_search()" type="button" class="btn btn-light">get_api_search</button>
     <button onclick="file_upload()" type="button" class="btn btn-dark">file_upload</button>
+    <button onclick="put_modify_post()" type="button" class="btn btn-dark">put_modify_post</button>
+    <button onclick="post_login()" type="button" class="btn btn-danger">login</button>
+    <button onclick="post_nickname_search()" type="button" class="btn btn-danger">post_nickname_search</button>
 </div>
 
 <div>
@@ -169,12 +258,31 @@
 
     <div class="input-group mb-3">
         <div class="input-group-prepend">
-            <span class="input-group-text">img</span>
+            <span class="input-group-text">nickname</span>
         </div>
-        <input id="img" type="text" class="form-control" aria-label="Username"
+        <input id="nickname" type="text" class="form-control" aria-label="Username"
                aria-describedby="basic-addon1"
-               value="https://img8.yna.co.kr/photo/yna/YH/2018/12/17/PYH2018121701180000500_P4.jpg">
+               value="123">
     </div>
+
+    <div class="input-group mb-3">
+        <div class="input-group-prepend">
+            <span class="input-group-text">password</span>
+        </div>
+        <input id="password" type="text" class="form-control" aria-label="Username"
+               aria-describedby="basic-addon1"
+               value="1313">
+    </div>
+
+    <div class="input-group mb-3">
+        <div class="input-group-prepend">
+            <span class="input-group-text">confirmPassword</span>
+        </div>
+        <input id="confirmPassword" type="text" class="form-control" aria-label="Username"
+               aria-describedby="basic-addon1"
+               value="1313">
+    </div>
+
 
     <div>
         <input id="file" type="file">

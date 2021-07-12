@@ -34,4 +34,6 @@ Object.keys(db).forEach(modelName => {
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
+// comments, favorites, posts, users
+// db 안에는 4개 들어있습니다.
 module.exports = db;

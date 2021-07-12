@@ -11,27 +11,21 @@ const postLoginSchema = Joi.object({
 });
 
 router.post("/login", async (req, res) => {
-    console.log(req.body)
     try {//에러가 날 수 있으니 try catch로 감싸준다
-        const { nickname, password } = await postLoginSchema.validateAsync(req.body);
-        console.log(nickname, password)
-
-        const user = await Users.findOne({ nickname, password });
-        console.log(user)
-    
-        if (!user) {//입력한 값이 데이터 베이스에 일치하는 값이 없는 경우 
+        const {nickname, password} = await postLoginSchema.validateAsync(req.body);
+        const user = await Users.findOne({nickname, password});
+        if (!user) {//입력한 값이 데이터 베이스에 일치하는 값이 없는 경우
             res.status(401).send({
                 errorMessage: '닉네임 또는 패스워드가 잘못되었습니다.'
             });
             return; //여기서 일치하지 않는다면 아래 코드는 실행할 이유가 없으니 return
         }
-    
-        const token = jwt.sign({ userId: users.userId }, "Freddie_Mercury");//위에 과정을 통과했다면 토큰 발급
+
+        const token = jwt.sign({userId: user.userId}, "Freddie_Mercury");//위에 과정을 통과했다면 토큰 발급
         res.send({
             token,
         });
     } catch (err) {//에러핸들링
-        console.log(err)
         res.status(401).send({
             errorMessage: "요청한 데이터가 올바르지 않습니다."
         });
