@@ -1,4 +1,5 @@
 const express = require("express");
+const {Users, Posts, Favorites, Comments} = require("../models");
 const router = express.Router();
 const { Users } = require("../models");
 const jwt = require("jsonwebtoken");
