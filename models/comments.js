@@ -26,7 +26,7 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.INTEGER,
             required: true,
         },
-        Comments: DataTypes.STRING
+        comment: DataTypes.STRING
     }, {
         sequelize,
         modelName: 'Comments',

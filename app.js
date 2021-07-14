@@ -9,15 +9,19 @@ const router_like = require("./routers/router_like")
 const router_login = require("./routers/router_login")
 const router_sign = require("./routers/router_sign")
 const detail = require("./routers/detail")
-
-
-const {Users, Posts, Favorites, Comments} = require("./models");
+const cors = require("cors");
 const nunjucks = require("nunjucks");
 
 const app = express();
-
 const http = Http.createServer(app);
 const port = 3000;
+
+
+
+const bodyParser = require("body-parser")
+app.use(bodyParser.urlencoded({extended: true}))
+app.use(bodyParser.json());
+app.use(cors())
 
 // html을 테스트할 때만 사용.
 app.set("view engine", "html")
@@ -27,7 +31,7 @@ nunjucks.configure("views", {
 })
 
 app.get('/', (req, res) => {
-    res.render("router_post_test", {result: "3"})
+    res.render("router_post_test")
 });
 
 // Router 연동

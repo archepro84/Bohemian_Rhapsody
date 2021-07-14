@@ -1,19 +1,19 @@
 const jwt = require("jsonwebtoken");
 const {Users} = require("../models");
-const Joi = require("joi")
 
 module.exports = async (req, res, next) => {
     const {authorization} = req.headers;
     if (authorization == undefined) {
         // 헤더에 토큰이 없을 경우
-        res.status(401).send();
+        next()
         return;
     }
+
     try {
         const [tokenType, tokenValue] = authorization.split(" ");
         if (tokenType !== "Bearer") {
             // 헤더의 토큰 형식이 다른 경우
-            res.status(401).send();
+            next()
             return;
         }
 
@@ -24,8 +24,8 @@ module.exports = async (req, res, next) => {
             })
         next();
     } catch (error) {
-        // 토큰의 인증이 실패한 경우
-        res.status(401).send();
+        // 토큰의 인증이 실패하였거나, 형식에 맞지 않은 경우
+        next()
         return;
     }
 };
