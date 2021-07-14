@@ -1,37 +1,61 @@
 const express = require("express");
 const router = express.Router();
-const Favorites = require("../models"); //mysql은 모델스까지만 호출해도 가능
-const Posts = require("../models")
-// const authMiddleware = require("../middleware/auth-middleware");
+const { Favorites } = require("../models"); //mysql은 모델스까지만 호출해도 가능
+const authMiddleware = require("../middlewares/auth-middleware");
 
-router.get('/api/like', async (req, res) => {
-    try {
-        const {userId} = res.locals.users; //로컬 스토리지에 있는 userId를 받고
+router.get("/like", authMiddleware, async (req, res) => {
+  try {
+    let { userId } = res.locals.user;
 
-        const favorite = await Favorites.findAll(
-            { //userId 를 통해서 10번째 줄부터 mysql db에 조회해서
-                where: {
-                    userId
-                }
-            }
-        );
+    let Favorites_receive = await Favorites.findAll({
+      attributes: ["postId"],
+      where: { userId },
+    });
 
-        let postId = favorite["postId"]
+    let favorites = JSON.stringify(Favorites_receive);
 
-        const post = await Posts.findOne({where: {
-                postId
-            }});
-
-        let resultGive = [
-            post["postId"], post["img"]
-        ]
-        res
-            .status(200)
-            .json({result: resultGive});
-    } catch (error) {
-        res.status(400).send();
-    }
-
+    res.status(200).json({ result: Favorites_receive[0] });
+  } catch (error) {
+    // console.log("erro:", error);
+    res
+      .status(412)
+      .send({ errorMessage: "데이터베이스를 조회하는데 실패했습니다." });
+    return;
+  }
 });
 
-module.exports = router
+router.post("/like", authMiddleware, async (req, res) => {
+  try {
+    let userId = res.locals.user["userId"];
+    let { postId } = req.body;
+    // postId = parseInt(postId)
+
+    await Favorites.create({ userId, postId });
+
+    res.status(200).send();
+  } catch (error) {
+    res.status(400).send();
+  }
+});
+
+router.delete("/like", authMiddleware, async (req, res) => {
+  try {
+    const { postId } = req.body;
+
+    if (postId == undefined) {
+      res.status(412).send({
+        errorMessage: "postId를 받아오는데 실패했습니다.",
+      });
+    }
+
+    await Favorites.destroy({ where: { postId } });
+    res.status(200).send();
+  } catch (error) {
+    res
+      .status(412)
+      .send({ errorMessage: "데이터베이스를 삭제하는데 실패했습니다." });
+    return;
+  }
+});
+
+module.exports = router;
