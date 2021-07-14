@@ -8,6 +8,7 @@ const router_post = require("./routers/router_post")
 const router_like = require("./routers/router_like")
 const router_login = require("./routers/router_login")
 const router_sign = require("./routers/router_sign")
+const router_comment = require("./routers/router_comment")
 const detail = require("./routers/detail")
 const cors = require("cors");
 const nunjucks = require("nunjucks");
@@ -15,7 +16,6 @@ const nunjucks = require("nunjucks");
 const app = express();
 const http = Http.createServer(app);
 const port = 3000;
-
 
 
 const bodyParser = require("body-parser")
@@ -36,7 +36,7 @@ app.get('/', (req, res) => {
 
 // Router 연동
 app.use("/api", express.urlencoded({extended: false}),
-    [router, router_post, router_login, router_like, router_user, router_sign, router_search]);
+    [router, router_post, router_login, router_like, router_user, router_sign, router_search, router_comment]);
 app.use("/detail", express.urlencoded({extended: false}), detail);
 app.use(express.static("assets"));
 
