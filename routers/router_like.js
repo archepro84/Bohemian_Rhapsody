@@ -2,27 +2,29 @@ const express = require("express");
 const router = express.Router();
 const {Favorites} = require("../models"); //mysql은 모델스까지만 호출해도 가능
 const authMiddleware = require("../middlewares/auth-middleware");
+const Joi = require("joi")
+const connection = require("../assets/mySqlLib")
 
-router.get("/like", authMiddleware, async (req, res) => {
-    try {
-        let {userId} = res.locals.user;
-
-        let Favorites_receive = await Favorites.findAll({
-            attributes: ["postId"],
-            where: {userId},
-        });
-
-        let favorites = JSON.stringify(Favorites_receive);
-
-        res.status(200).json({result: Favorites_receive[0]});
-    } catch (error) {
-        // console.log("erro:", error);
-        res
-            .status(412)
-            .send({errorMessage: "데이터베이스를 조회하는데 실패했습니다."});
-        return;
-    }
-});
+// router.get("/like", authMiddleware, async (req, res) => {
+//     try {
+//         let {userId} = res.locals.user;
+//
+//         let Favorites_receive = await Favorites.findAll({
+//             attributes: ["postId"],
+//             where: {userId},
+//         });
+//
+//         let favorites = JSON.stringify(Favorites_receive);
+//
+//         res.status(200).json({result: Favorites_receive[0]});
+//     } catch (error) {
+//         // console.log("erro:", error);
+//         res
+//             .status(412)
+//             .send({errorMessage: "데이터베이스를 조회하는데 실패했습니다."});
+//         return;
+//     }
+// });
 
 router.post("/like", authMiddleware, async (req, res) => {
     try {
@@ -69,6 +71,40 @@ router.delete("/like", authMiddleware, async (req, res) => {
             .send({errorMessage: "데이터베이스를 삭제하는데 실패했습니다."});
         return;
     }
+});
+
+const userIdSchema = Joi.number().required();
+router.get('/like', authMiddleware, async (req, res) => {
+    try {
+        let result = []
+        const userId = await userIdSchema.validateAsync(Object.keys(res.locals).length ? res.locals.user.userId : 0)
+        const query = `SELECT postId, img
+        FROM Posts
+        WHERE postId IN (SELECT postId FROM Favorites WHERE userId = ${userId});`
+        connection.query(query, function (error, posts) {
+            if (error) {
+                res.status(412).send({
+                    errorMessage: "Favorites 테이블을 검색하지 못했습니다."
+                })
+                return;
+            }
+            for (const post of posts) {
+                result.push(
+                    {
+                        post: post.postId,
+                        img: post.img,
+                    }
+                )
+            }
+            res.send({result: result})
+        });
+    } catch (error) {
+        res.status(412).send({
+            errorMessage: "입력한 데이터 형식이 일치하지 않습니다."
+        })
+        return;
+    }
+
 });
 
 module.exports = router;
