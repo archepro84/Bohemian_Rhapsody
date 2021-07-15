@@ -19,3 +19,5 @@ doc/*.txt
 doc/**/*.pdf
 
 node_modules/
+
+views/

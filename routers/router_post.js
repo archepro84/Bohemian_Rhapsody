@@ -1,16 +1,12 @@
 const express = require("express");
 const {Users, Posts, Favorites, Comments} = require("../models");
-const db = require("../models").db;
-
 const router = express.Router();
 const authMiddleware = require("../middlewares/auth-middleware");
 const authMiddlewareAll = require("../middlewares/auth-middleware_all")
 const Joi = require("joi");
-const cors = require("cors");
 const connection = require("../assets/mySqlLib")
+require('dotenv').config();
 
-
-// router.use(cors())
 
 const postSchema = Joi.object({
     title: Joi.string().required(),

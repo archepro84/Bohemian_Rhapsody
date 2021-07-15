@@ -1,6 +1,8 @@
 const jwt = require("jsonwebtoken");
 const {Users} = require("../models");
 const Joi = require("joi")
+require('dotenv').config();
+
 
 module.exports = async (req, res, next) => {
     const {authorization} = req.headers;
@@ -17,7 +19,7 @@ module.exports = async (req, res, next) => {
             return;
         }
 
-        const {userId} = jwt.verify(tokenValue, "Freddie_Mercury");
+        const {userId} = jwt.verify(tokenValue, process.env.SECRET_KEY);
         await Users.findByPk(userId)
             .then((user) => {
                 res.locals.user = user['dataValues']
