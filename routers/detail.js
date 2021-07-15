@@ -38,6 +38,7 @@ router.get('/:postId', authMiddlewareAll, async (req, res) => {
                 {
                     postId: post[0].postId,
                     userId: post[0].userId,
+                    title:post[0].title,
                     nickname: post[0].nickname,
                     artist: post[0].artist,
                     showDate: post[0].showDate,

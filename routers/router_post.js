@@ -18,23 +18,25 @@ const postSchema = Joi.object({
     showDate: Joi.date(),
     description: Joi.string(),
     img: Joi.string()
-
 });
 
-const postIdSchema = Joi.object({
-    postId: Joi.number().required()
-})
+const postIdSchema = Joi.number().required()
 const userIdSchema = Joi.number().required()
+const limitSchema = Joi.object({
+    start: Joi.number().required(),
+    limit: Joi.number().required().min(1),
+})
 
 router.get('/post/posts', authMiddlewareAll, async (req, res) => {
     let result = [];
     try {
         const userId = await userIdSchema.validateAsync(Object.keys(res.locals).length ? res.locals.user.userId : 0)
-
+        const {start, limit} = await limitSchema.validateAsync(Object.keys(req.query).length ? req.query : req.body)
         //FIXME query를 mysql 모듈로 사용하지 않고 ORM을 사용하도록 수정하자
         const query = `select postId, img, 
         case when postId in (select postId from Favorites where userId = ${userId}) then "TRUE" else "FALSE" end as favorite
-        from Posts;`;
+        from Posts
+        LIMIT ${start}, ${limit};`;
         await connection.query(query, function (error, posts, fields) {
             if (error) {
                 console.error(error);
@@ -60,34 +62,7 @@ router.get('/post/posts', authMiddlewareAll, async (req, res) => {
             }
         )
     }
-
-
-    // await Posts.findAll({})
-    //     .then((posts) => {
-    //         for (const post of posts) {
-    //             result.push({
-    //                     postId: post['dataValues']['postId'],
-    //                     img: post['dataValues']['img']
-    //                 }
-    //             );
-    //         }
-    //     })
-    // res.send({result})
 });
-
-// router.get('/post/postss', authMiddleware, async (req, res) => {
-//     const {userId} = res.locals.user
-//     const result = await db.query("SELECT * FROM Posts", function (err, result) {
-//         done();
-//         if (err) {
-//             throw err;
-//         }
-//     })
-//
-//     console.log(result);
-//     res.send({result})
-// });
-
 
 router.post('/post', authMiddleware, async (req, res) => {
     const userId = res.locals.user['userId']
@@ -101,11 +76,9 @@ router.post('/post', authMiddleware, async (req, res) => {
         // TODO Create 에서 반환되는 post의 null이 과연 정상적인 postId값인가?
         await Posts.create({userId, title, artist, showDate, description, img})
             .then((post) => {
-                // console.log(post['null']);
                 const postId = post['null'];
                 res.send({postId})
             })
-
     } catch (error) {
         res.status(412).send()
         return;
@@ -116,7 +89,7 @@ router.post('/post', authMiddleware, async (req, res) => {
 router.put('/post/:postId', authMiddleware, async (req, res) => {
     try {
         const {userId} = res.locals.user
-        const {postId} = await postIdSchema.validateAsync(req.params)
+        const postId = await postIdSchema.validateAsync(req.params.postId)
         const {title, artist, showDate, description, img} = await postSchema.validateAsync(req.body)
 
         //update의 반환값은 튜플이 몇개 변경되었는지 나타내는 수
@@ -127,9 +100,7 @@ router.put('/post/:postId', authMiddleware, async (req, res) => {
             }
         )
             .then((updateCount) => {
-                // userId가 틀렸거나,
-                // postId가 틀렸거나,
-                // post 존재하지않거나
+                // userId가 틀렸거나, postId가 틀렸거나, post 존재하지않거나
                 if (updateCount < 1) {
                     // 변경된 데이터가 없을 경우
                     res.status(400).send()
@@ -146,7 +117,7 @@ router.put('/post/:postId', authMiddleware, async (req, res) => {
 router.delete('/post', authMiddleware, async (req, res) => {
     try {
         const {userId} = res.locals.user
-        const {postId} = await postIdSchema.validateAsync(req.body)
+        const postId = await postIdSchema.validateAsync(req.body.postId)
         await Posts.destroy({
             where: {
                 postId, userId
