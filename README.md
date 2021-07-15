@@ -9,7 +9,7 @@
 
 ## 패키지
 
----
+
 * sequelize
 * sequelize-cli
 * express
@@ -22,13 +22,13 @@
 
 ## 업무 분담
 
----
+
 * 이용우 : 팀장, DB 및 ERD 구성, 검색, 게시글 CRUD, CORS
 * 이해웅 : 로그인, 회원가입, 댓글 CRUD, 사용자 인증 미들웨어
  
 ## 기능
 
----
+
 * 검색
 * 게시글 CRUD
 * 댓글 CRUD
@@ -38,6 +38,6 @@
 
 ## DB ERD
 
----
+
 ![](https://blog.kakaocdn.net/dn/2oSJF/btq9Ah58Rrr/i2VY7Hs5rOnRwvjLVrPN20/img.png)
 
