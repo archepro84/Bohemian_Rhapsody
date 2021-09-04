@@ -4,22 +4,22 @@
   <img src='https://img.shields.io/badge/MySQL-5.7-white?logo=MySQL'>
 </p>
 
-## 🏠 [Home Page](http://tumblrclone.shop/) / [Youtube](https://www.youtube.com/watch?v=HLYTArLgdeY)
+## 🏠 [Home Page](http://bohemianrhapsody.shop/) / [Youtube](https://www.youtube.com/watch?v=lUjD6D7hPKA)
 
 ![Screenshot_56](https://user-images.githubusercontent.com/47944165/132097069-2a781816-9ae6-41e1-96ac-059c95979775.png)
 
 
 ## 🚩 프로젝트 소개
-블로그형 SNS tumblr를 클론코딩한 프로젝트 입니다.
+이미지 기반 SNS pinterest를 클론코딩한 프로젝트 입니다.
 
 ## 🗓 프로젝트 기간
-2021년 7월 16일 ~ 2021년 7월 22일
+2021년 7월 9일 ~ 2021년 7월 15일
 
 ## 👥 개발 인원
 - 이용우 (Node.js) [팀장] @ [archepro84](https://github.com/archepro84)
 - 이해웅 (Node.js) @ [HW3542](https://github.com/HW3542)
 - 홍성훈 (React) @ [HseongH](https://github.com/HseongH)
-- 이선민 (React) @ [sunm-in](https://github.com/sunm-in)
+- 주재인 (React) @ [demian0721](https://github.com/demian0721)
 
 
 ## 🛠 기술스텍
@@ -35,56 +35,43 @@ Axios | MySQL
 
 라이브러리 | 설명
 ---|:---:
+body-parser | 파라미터 추출
+chokidar | 파일 감시 라이브러리
 cors | 교차 리소스 공유
 dotenv | DB비밀번호, 시크릿키 암호화
 express | 서버
+express-fileupload | 파일업로드
+fs | 파일 수정
 jsonwebtoken | 회원가입 작동 방식
 sequelize | MySQL ORM
 sequelize-cli | MySQL ORM Console
 mysql | MySQL
 cookie-parser | 쿠키 저장
 joi | 입력데이터 검출
+nunjucks | 템플릿 언어
+
 
 ## 🗃 DB ERD
-![image](https://blog.kakaocdn.net/dn/csyYol/btq99nLz5sx/Myv5qyQoMMmqDA1IKj3Km0/img.png)
+![](https://blog.kakaocdn.net/dn/2oSJF/btq9Ah58Rrr/i2VY7Hs5rOnRwvjLVrPN20/img.png)
 
-## 📋 [API Document](https://docs.google.com/spreadsheets/d/16bei4mL8K_fA4-Z0Fx30NjPpM8aKTkHc4ema2CfYSG4/edit#gid=328670061)
+## 📋 [API Document](https://docs.google.com/spreadsheets/d/1RmCCC8TYkvNTH7gBLJ8cIhmlHC7W131AipUwB6R4C3Y/edit#gid=0)
 
-## 📂 [Notion](https://www.notion.so/99-1-3c5a2aec7ac94d46b8d1e95d4e873bb8)
+## 📂 [Notion](https://www.notion.so/12-fd2b9e26805f4e9a908f1e5f791d7838)
 
-## 🔨 [Front-End Git hub](https://github.com/HseongH/Tumblr_clone)
+## 🔨 [Front-End Git hub](https://github.com/HseongH/Bohemian-Rhapsody)
 
 
 ## 📌 코드 리뷰 및 개선사항
 
 ### 1) 검색
-- 게시글을 검색할 때 Sequelize Law Query를 이용해 검색을 구현했습니다. 6개의 테이블을 각 테이블의 관계에 맞도록 조회하였습니다. Sub Query를 많이 사용해 DB에서 과부하 되지 않을까? 라는 생각을 하였지만, 최적화에 대한 문제를 더 파고들지 못한 부분이 아쉬웠습니다.
+- 게시글을 검색할 때 raw query를 이용해 검색을 구현했습니다. 6개의 테이블을 각 테이블의 관계에 맞도록 조회하였습니다. Sub Query를 많이 사용해 DB에서 과부하 되지 않을까? 라는 생각을 하였지만, 최적화에 대한 문제를 더 파고들지 못한 부분이 아쉬웠습니다.
 
 ```SQL
-SELECT u.userId, u.nickname, u.profileImg, p.postId, p.reBlog, p.title,
-(SELECT GROUP_CONCAT(img ORDER BY img ASC SEPARATOR ', ')
-    FROM Images
-    WHERE postId = p.postId
-    GROUP BY postId) AS img,
-p.content,
-(SELECT GROUP_CONCAT(tag ORDER BY tag ASC SEPARATOR ', ')
-    FROM Tags
-    WHERE postId = p.postId
-    GROUP BY postId) AS tag,
-CASE WHEN p.postId IN (SELECT postId FROM Favorites WHERE userId=${userId}) THEN "Y" ELSE "N" END AS favorite,
-(SELECT COALESCE(MIN('Y'), 'N')
-    FROM Follows
-    WHERE EXISTS (SELECT 1 FROM  Follows WHERE followUserId = ${userId} AND followerUserId=p.userId)) AS follow,
-(SELECT COUNT(*) FROM Favorites WHERE postId=p.postId) AS reactionCount,
-p.createdAt
-FROM Posts AS p
-INNER JOIN Users AS u
-USING(userId)
-WHERE p.title LIKE '%${keyword}%' 
-    OR p.content LIKE '%${keyword}%'
-    OR postId IN (SELECT postId FROM Tags WHERE tag LIKE '%${keyword}%') 
-ORDER BY p.createdAt DESC
-LIMIT ${start},${limit} 
+SELECT postId, img, 
+            CASE WHEN postId IN (SELECT postId FROM Favorites WHERE userId = ${userId}) THEN "TRUE" ELSE "FALSE" END AS favorite
+            FROM Posts
+            WHERE title LIKE '%${keyword}%' OR artist LIKE '%${keyword}%'
+            LIMIT ${start}, ${limit};
 ```
 
 ### 2) 팔로우
