@@ -61,81 +61,24 @@ nunjucks | 템플릿 언어
 ## 🔨 [Front-End Git hub](https://github.com/HseongH/Bohemian-Rhapsody)
 
 
-## 📌 코드 리뷰 및 개선사항
+## 📌 특징
 
-### 1) 검색
-- 게시글을 검색할 때 raw query를 이용해 검색을 구현했습니다. 6개의 테이블을 각 테이블의 관계에 맞도록 조회하였습니다. Sub Query를 많이 사용해 DB에서 과부하 되지 않을까? 라는 생각을 하였지만, 최적화에 대한 문제를 더 파고들지 못한 부분이 아쉬웠습니다.
-
+### 1) 게시글 보여주기
+- 게시글을 보여줄때 무한스크롤이 가능하도록 LIMIT 옵션을 사용해서 정해진 갯수의 데이터만 통신하도록 했습닌다.
+- 즐겨찾기 기능을 위해 따로 즐겨찾기 테이블을 구성해서 자신이 즐겨찾기에 추가한 경우와 아닌 경우를 TRUE,False로 구분하였습니다.
 ```SQL
+select postId, img, 
+        case when postId in (select postId from Favorites where userId = ${userId}) then "TRUE" else "FALSE" end as favorite
+        from Posts
+        LIMIT ${start}, ${limit};
+```
+
+### 2) 검색 기능
+- Like 옵션을 활용하여 특정 글자가 들어간 글의 제목과 아티스트를 검색 가능하도록 구현하였습니다.
+``` SQL
 SELECT postId, img, 
             CASE WHEN postId IN (SELECT postId FROM Favorites WHERE userId = ${userId}) THEN "TRUE" ELSE "FALSE" END AS favorite
             FROM Posts
             WHERE title LIKE '%${keyword}%' OR artist LIKE '%${keyword}%'
             LIMIT ${start}, ${limit};
-```
-
-### 2) 팔로우
-- Follower, Following기능을 구현하였습니다.
-``` SQL
-SELECT
-CASE WHEN ${followerUserId} IN (SELECT userId FROM Users) THEN 'Y' ELSE 'N' END AS isExist,
-COALESCE(MIN('Y'), 'N') AS Following
-FROM Follows
-WHERE EXISTS ( SELECT 1 
-             FROM Follows 
-             WHERE followUserId = ${followUserId} AND followerUserId = ${followerUserId});
-```
-
-
-### 3) 알람
-
-- MySQL에서 Trigger를 사용해 팔로우, 좋아요, 리블로그가 추가될 경우 자동으로 Alarms 테이블에 데이터를 삽입하도록 설정하였습니다. DB와 서버 간의 불필요한 통신과 추가적인 작업을 줄여 최적화시키는데 활용하였습니다.
-
-```SQL
-CREATE TRIGGER TR_Posts_reBlog_Alarm
-    AFTER INSERT ON Posts
-    FOR EACH ROW
-    BEGIN
-        IF (NEW.reBlog IS NOT NULL) THEN 
-            INSERT INTO Alarms (giverUserId, receiverUserId, type, createdAt, updatedAt) values
-                (NEW.userId, (SELECT userId FROM Posts WHERE postId = NEW.reBlog), 2, NOW(), NOW() );
-        END IF;
-    END
-```
-
-### 4) 이미지 및 태그
-- 게시글에서 여러 개의 이미지와 태그를 관리하기 위해 별도의 테이블을 구성하였고, 이미지 및 태그 테이블을 조회할 때 GROUP_CONCAT을 사용하여 하나의 레코드로 구현하였습니다.
-
-```SQL
-SELECT GROUP_CONCAT(img ORDER BY img ASC SEPARATOR ', ')
-    FROM Images
-    WHERE postId = p.postId
-    GROUP BY postId
-    
-SELECT GROUP_CONCAT(tag ORDER BY tag ASC SEPARATOR ', ')
-    FROM Tags
-    WHERE postId = p.postId
-    GROUP BY postId
-```
-
-### 5) 게시글 반응
-- 게시글을 좋아요 하거나 리블로그 한 사람들의 목록을 순차적으로 볼 수 있습니다.
-
-```SQL
-SELECT u.userId, u.nickname, 2 AS type, u.profileImg, p.createdAt
-FROM Posts AS p
-INNER JOIN Users AS u
-ON p.userId = u.userId 
-WHERE reBlog = ${postId}
-
-UNION ALL
-
-SELECT u.userId, u.nickname, 3 AS type, u.profileImg, f.createdAt
-FROM Favorites AS f
-INNER JOIN Users AS u
-ON f.userId = u.userId
-WHERE f.postId = ${postId}
-
-ORDER BY createdAt DESC
-LIMIT ${start},${limit} 
 ```
