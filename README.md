@@ -65,7 +65,7 @@ nunjucks | 템플릿 언어
 
 ### 1) 게시글 보여주기
 - 게시글을 보여줄때 무한스크롤이 가능하도록 LIMIT 옵션을 사용해서 정해진 갯수의 데이터만 통신하도록 했습닌다.
-- 즐겨찾기 기능을 위해 따로 즐겨찾기 테이블을 구성해서 자신이 즐겨찾기에 추가한 경우와 아닌 경우를 TRUE,False로 구분하였습니다.
+- 즐겨찾기 기능을 위해 따로 즐겨찾기 테이블을 구성해서 자신이 즐겨찾기에 추가한 경우와 아닌 경우를 TRUE, False로 구분하였습니다.
 ```SQL
 select postId, img, 
         case when postId in (select postId from Favorites where userId = ${userId}) then "TRUE" else "FALSE" end as favorite
@@ -73,7 +73,16 @@ select postId, img,
         LIMIT ${start}, ${limit};
 ```
 
-### 2) 검색 기능
+### 2) 즐겨찾기
+- 즐겨찾기를 위한 Favorite 테이블을 따로두어 즐겨찾기 기능을 구현했습니다.
+``` SQL
+SELECT postId, img
+        FROM Posts
+        WHERE postId IN (SELECT postId FROM Favorites WHERE userId = ${userId})
+        LIMIT ${start}, ${limit};
+```
+
+### 3) 검색 기능
 - Like 옵션을 활용하여 특정 글자가 들어간 글의 제목과 아티스트를 검색 가능하도록 구현하였습니다.
 ``` SQL
 SELECT postId, img, 
